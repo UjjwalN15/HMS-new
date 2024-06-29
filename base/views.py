@@ -17,35 +17,51 @@ from django.db.models import Sum, Count, Avg
 class PatientApiView(ModelViewSet):
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
+    filterset_fields = ['name','phone','email']
     search_fields = ['name']
+class UserApiView(ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 class Doctor_SpecialityApiView(ModelViewSet):
     queryset = Doctor_Speciality.objects.all()
     serializer_class = Doctor_SpecialitySerializer
+    filterset_fields = ['name']
+    search_fields = ['name']
 
 class DoctorApiView(ModelViewSet):
     queryset = Doctor.objects.all()
     serializer_class = DoctorSerializer
+    filterset_fields = ['name','phone','email']
+    search_fields = ['name','specialty','address']
 
 
 class StaffApiView(ModelViewSet):
     queryset = Staff.objects.all()
     serializer_class = StaffSerializer
+    filterset_fields = ['name','phone','email']
+    search_fields = ['name','role','address']
 
 class AppointmentApiView(ModelViewSet):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
+    filterset_fields = ['status']
+    search_fields = ['patient__name','doctor__name','status']
 
 class MedicalRecordApiView(ModelViewSet):
     queryset = MedicalRecord.objects.all()
     serializer_class = MedicalRecordSerializer
     parser_classes = (MultiPartParser, FormParser)
+    filterset_fields = ['date']
+    search_fields = ['diagnosis','treatments','doctor__name','patient__name']
     
     
 class EmergencyApiView(ModelViewSet):
     queryset = Emergency.objects.all()
     serializer_class = EmergencySerializer
     permission_classes = [AllowAny]
+    filterset_fields = ['name','contact_number','email']
+    search_fields = ['title','description']
     
 @permission_classes([AllowAny,])
 class LogoutView(APIView):
@@ -89,29 +105,3 @@ def groups(request):
     groups_obj = Group.objects.all()
     serializer = GroupSerializer(groups_obj, many = True)
     return Response(serializer.data)
-
-class PatientDemographicsReport(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        gender_distribution = Patient.objects.values('patient.gender').annotate(count=Count('gender'))
-        age_distribution = Patient.objects.values('patient.age').annotate(count=Count('age'))
-        
-        return Response({
-            'gender_distribution': gender_distribution,
-            'age_distribution': age_distribution
-        })
-
-
-class AppointmentsReport(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        total_appointments = Appointment.objects.count()
-        appointments_by_date = Appointment.objects.values('date').annotate(count=Count('date'))
-        
-        return Response({
-            'total_appointments': total_appointments,
-            'appointments_by_date': appointments_by_date
-        })
-

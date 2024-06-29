@@ -4,6 +4,7 @@ from base.models import Patient
 #For total
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
+from decimal import Decimal
 # Create your models here.    
 class ProductCategory(models.Model):
     name = models.CharField(max_length = 200)
@@ -39,26 +40,11 @@ class Purchase(models.Model):
     quantity = models.IntegerField()
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=False, blank=False)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, null=False, blank=False)
-    total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)  # Ensure total field is added
+    total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if self.product.stock >= self.quantity:
-            self.total = self.quantity * self.product.price
-            super(Purchase, self).save(*args, **kwargs)
-        else:
-            raise ValueError("Stock less than quantity.")
-    # Property to calculate total dynamically
-    @property
-    def total(self):
-        return self.quantity * self.product.price
-
-    # Override save method to check stock and save if valid
-    def save(self, *args, **kwargs):
-        if self.product.stock >= self.quantity:
-            super().save(*args, **kwargs)
-        else:
-            raise ValueError("Stock is less than quantity.")
-    
+        self.total = Decimal(self.quantity) * Decimal(self.product.price)
+        super(Purchase, self).save(*args, **kwargs)
 class Purchase_Products(models.Model):
     name = models.CharField(max_length=300)
     quantity = models.IntegerField()
@@ -66,16 +52,12 @@ class Purchase_Products(models.Model):
     details = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2,null=False, blank=False)
     supplier = models.ForeignKey(Supplier,on_delete = models.CASCADE, null = False, blank=False)
-    total = models.DecimalField(max_digits=10, decimal_places=2,null=False, blank=False)
-    @property
-    def total(self):
-        return self.quantity * self.product.price
     
 class Billing(models.Model):
     patient = models.ForeignKey(Patient, related_name='billing', on_delete=models.CASCADE, null=False, blank=False)
     purchases = models.ManyToManyField(Purchase)
     status = models.CharField(max_length=100, choices=[('paid', 'Paid'), ('unpaid', 'Unpaid')])
-    total = models.DecimalField(max_digits=10, decimal_places=2,null=False, blank=False)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
         
 class Revenue(models.Model):
     title = models.CharField(max_length=300)

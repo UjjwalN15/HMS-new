@@ -11,4 +11,5 @@ class StaffAdmin(admin.ModelAdmin):
 
 admin.site.register(Staff)
 admin.site.register(Purchase_Products)
+admin.site.register(Patient)
 
