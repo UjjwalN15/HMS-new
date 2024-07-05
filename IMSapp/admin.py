@@ -9,7 +9,6 @@ class StaffAdmin(admin.ModelAdmin):
     list_display = ['user', 'role']
     # Ensure that user creation happens here if necessary
 
-admin.site.register(Staff)
-admin.site.register(Purchase_Products)
-admin.site.register(Patient)
+
+admin.site.register(Department)
 

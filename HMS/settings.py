@@ -143,11 +143,29 @@ TIME_ZONE = 'Asia/Kathmandu'
 # Ensure USE_TZ is set to True to enable timezone support
 USE_TZ = True
 
+#For Nepali time zone
 from django.utils.timezone import now
 
 def nepal_time_default():
     return now()
 
-
+#For accepting medias
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+
+# #For sending email dynamically
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'sajilokheti54@gmail.com'  # Your email address
+# EMAIL_HOST_PASSWORD = '7000 rs deu'  # Your email password or app-specific password
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+# Replace these with your credentials
+EMAIL_HOST_USER = 'sajilokheti54@gmail.com'
+EMAIL_HOST_PASSWORD = 'cksr yqlm prwc nush'

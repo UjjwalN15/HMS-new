@@ -1,5 +1,5 @@
 # views.py
-
+from django.http import Http404
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -9,11 +9,12 @@ from .models import *
 from base.models import *
 from .serializers import *
 from decimal import Decimal
+from django.shortcuts import get_object_or_404
 
 class DepartmentApiView(ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
-    filterset_fields = ['name','floor']
+    filterset_fields = ['name']
     search_fields = ['name']
 
 class ProductApiView(ModelViewSet):
@@ -50,10 +51,23 @@ class PurchaseProductViewSet(ModelViewSet):
     filterset_fields = ['name', 'supplier']
     search_fields = ['name','details']
 
+# class BillingApiView(ModelViewSet):
+#     queryset = Billing.objects.all()
+#     serializer_class = BillingSerializer
+#     search_fields = ['patient__name']
+
+#     def perform_create(self, serializer):
+#         patient_id = self.request.data.get('patient')
+#         patient = get_object_or_404(Patient, id=patient_id)
+#         serializer.save(patient=patient)
+#     def perform_create(self, serializer):
+#         patient_id = self.request.data.get('purchases')
+#         patient = get_object_or_404(Purchase, id=patient_id)
+#         serializer.save(purchases=patient)
+
 class BillingApiView(ModelViewSet):
     queryset = Billing.objects.all()
     serializer_class = BillingSerializer
-    filterset_fields = ['status','patient']
     search_fields = ['patient__name']
 
 class PurchaseApiView(GenericAPIView):
@@ -121,6 +135,7 @@ class PurchaseDetailApiView(GenericAPIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class ReportViewSet(ModelViewSet):
     queryset = Reports.objects.all()
     serializer_class = ReportSerializer
@@ -144,7 +159,7 @@ class ReportViewSet(ModelViewSet):
         total_doctors = Doctor.objects.count()
         patient_kid = Patient.objects.filter(age__lte=18).count()
         patient_adult = Patient.objects.filter(Q(age__lte=40) & Q(age__gt=18)).count()
-        patient_old = Patient.objects.filter(age__gt=40)
+        patient_old = Patient.objects.filter(age__gt=40).count()
 
         report = {
             'total_system_users': users_count + patients_count + total_staffs + total_doctors,
@@ -170,3 +185,17 @@ class ReportViewSet(ModelViewSet):
         }
 
         return Response(report)
+
+#Sandesh Dai
+# def EventCost(request, event_id):
+#     # def get(self, request, event_id):
+#     event = Events.objects.get(pk=event_id)
+#     venuecost = event.venue_cost 
+#     total_attendees = event.attendees.count()
+#     cost_based_on_attendees = event.Food_cost_per_person * total_attendees
+#     total_logistic_cost = (
+#         Catering.objects.filter(event=event).aggregate(total_logistic_cost=models.Sum('cost'))['total_logistic_cost'] +
+#         Equipment.objects.filter(event=event).aggregate(total_logistic_cost=models.Sum('cost'))['total_logistic_cost'] +
+#         Transportation.objects.filter(event=event).aggregate(total_logistic_cost=models.Sum('cost'))['total_logistic_cost'] 
+#     )
+#     total_event_cost = venuecost + cost_based_on_attendees + total_logistic_cost

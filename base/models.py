@@ -56,17 +56,18 @@ class Staff(models.Model):
     role = models.ForeignKey(Group, on_delete=models.CASCADE)
     phone = models.CharField(max_length=20, unique=True)
 
+
 class Appointment(models.Model):
-    # patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, null=True, blank=True)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
-    appointment_date = models.DateTimeField()
+    appointment_date = models.DateField()
     status = models.CharField(max_length=100, choices=[('scheduled', 'Scheduled'), ('canceled', 'Canceled'), ('completed', 'Completed')],default='scheduled')
 
 def nepal_time_default():
     return now()
 
 class MedicalRecord(models.Model):
-    # patient = models.ForeignKey(Patient, on_delete=models.CASCADE)
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, null=True, blank=True)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
     date = models.DateField(auto_now_add=True)
     diagnosis = models.TextField()

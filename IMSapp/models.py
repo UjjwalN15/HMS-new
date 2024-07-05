@@ -14,7 +14,6 @@ class ProductCategory(models.Model):
     
 class Department(models.Model):
     name = models.CharField(max_length = 200,unique=True)
-    floor = models.IntegerField()
 
 class Supplier(models.Model):
     name = models.CharField(max_length=200)
@@ -29,7 +28,8 @@ class Product(models.Model):
     stock = models.IntegerField()
     category = models.ForeignKey(ProductCategory,on_delete = models.CASCADE, null = False)
     price = models.DecimalField(max_digits=10, decimal_places=2,null=False, blank=False)
-    department = models.ManyToManyField(Department)
+    # department = models.ManyToManyField(Department)
+    department = models.ForeignKey(Department,on_delete=models.CASCADE, null=True, blank=True)
     supplier = models.ForeignKey(Supplier,on_delete=models.CASCADE, null=False, blank=False)
     def __str__(self):
         return self.name
@@ -52,6 +52,8 @@ class Purchase_Products(models.Model):
     details = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2,null=False, blank=False)
     supplier = models.ForeignKey(Supplier,on_delete = models.CASCADE, null = False, blank=False)
+    category = models.ForeignKey(ProductCategory,on_delete = models.CASCADE, null=True)
+    department = models.ForeignKey(Department,on_delete=models.CASCADE, null=True, blank=True)
     
 class Billing(models.Model):
     patient = models.ForeignKey(Patient, related_name='billing', on_delete=models.CASCADE, null=False, blank=False)
