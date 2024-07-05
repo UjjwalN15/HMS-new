@@ -66,6 +66,9 @@ class PurchaseProductViewSet(ModelViewSet):
 #         serializer.save(purchases=patient)
 
 class BillingApiView(ModelViewSet):
+    # queryset = Billing.objects.all()
+    # serializer_class = BillingSerializer
+    # search_fields = ['patient__name']
     queryset = Billing.objects.all()
     serializer_class = BillingSerializer
     search_fields = ['patient__name']

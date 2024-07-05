@@ -74,6 +74,9 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
 class BillingSerializer(serializers.ModelSerializer):
     total = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
+    patient_name = serializers.CharField(source='patient.name', read_only=True)
+    purchases = PurchaseSerializer(many=True, read_only=True)
+
     class Meta:
         model = Billing
         fields = '__all__'
@@ -82,18 +85,20 @@ class BillingSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         total = Decimal(0)
         purchases_data = []
-        for purchase in instance.purchases.all():
+
+        # Iterate over related purchases of the instance's patient
+        for purchase in instance.patient.purchases.all():
             purchase_data = {
-            'product': (purchase.product.name),
-            'price': format(Decimal(purchase.product.price), '.2f'),
-            'quantity': format(Decimal(purchase.quantity), '.2f'),
-            'total': format(Decimal(purchase.total), '.2f'),
+                'product': purchase.product.name,
+                'price': format(purchase.product.price, '.2f'),
+                'quantity': format(purchase.quantity, '.2f'),
+                'total': format(purchase.total, '.2f'),
             }
             purchases_data.append(purchase_data)
-            total += Decimal(purchase.quantity) * Decimal(purchase.product.price)
+            total += Decimal(purchase.total)
+
         representation['total'] = format(total, '.2f')
         representation['purchases'] = purchases_data
-        representation['patient'] = instance.patient.name 
         return representation
     
 class PurchaseProductsSerializer(serializers.ModelSerializer):
