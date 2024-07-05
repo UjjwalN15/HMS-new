@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from .models import *
-from base.serializers import PatientSerializer
 from decimal import Decimal
-from django.db.models import Sum, F
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,30 +8,17 @@ class DepartmentSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 class ProductSerializer(serializers.ModelSerializer):
-    # department = serializers.PrimaryKeyRelatedField(queryset=Department.objects.all(), many=True)
     class Meta:
         model = Product
         fields = '__all__'
     
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        
-        # Iterate over related departments if it's a many-to-many relationship
-        # department_data = []
-        # for department in instance.department.all():
-        #     department_data.append({
-        #         'name': department.name,
-        #     })
-        
         representation['department'] = instance.department.name if instance.department else None
         representation['category'] = instance.category.name if instance.category else None
         representation['supplier'] = instance.supplier.name if instance.supplier else None
         
         return representation
-
-
-
-
 class ProductCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductCategory
@@ -42,13 +27,7 @@ class SupplierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Supplier
         fields = '__all__'
-# class PurchaseSerializer(serializers.ModelSerializer):
-#     price = serializers.DecimalField(max_digits=10, decimal_places=2, source='product.price', read_only=True)
-#     total = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
-#     patient = PatientSerializer
-#     class Meta:
-#         model = Purchase
-#         fields = '__all__'
+
 class PurchaseSerializer(serializers.ModelSerializer):
     price = serializers.DecimalField(max_digits=10, decimal_places=2, source='product.price', read_only=True)
     total = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
@@ -108,12 +87,6 @@ class PurchaseProductsSerializer(serializers.ModelSerializer):
         fields = '__all__'
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        # department_data = []
-        # for department in instance.department.all():
-        #     department_data.append({
-        #         'name': department.name,
-        #     })
-        
         representation['department'] = instance.department.name if instance.department else None
         representation['category'] = instance.category.name if instance.category else None
         representation['supplier'] = instance.supplier.name if instance.supplier else None

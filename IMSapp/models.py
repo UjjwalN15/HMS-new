@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
 from base.models import Patient
 #For total
 from django.db.models.signals import m2m_changed
@@ -28,7 +27,6 @@ class Product(models.Model):
     stock = models.IntegerField()
     category = models.ForeignKey(ProductCategory,on_delete = models.CASCADE, null = False)
     price = models.DecimalField(max_digits=10, decimal_places=2,null=False, blank=False)
-    # department = models.ManyToManyField(Department)
     department = models.ForeignKey(Department,on_delete=models.CASCADE, null=True, blank=True)
     supplier = models.ForeignKey(Supplier,on_delete=models.CASCADE, null=False, blank=False)
     def __str__(self):

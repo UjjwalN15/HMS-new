@@ -1,5 +1,4 @@
 # views.py
-from django.http import Http404
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
@@ -9,8 +8,6 @@ from .models import *
 from base.models import *
 from .serializers import *
 from decimal import Decimal
-from django.shortcuts import get_object_or_404
-
 class DepartmentApiView(ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
@@ -50,25 +47,7 @@ class PurchaseProductViewSet(ModelViewSet):
     serializer_class = PurchaseProductsSerializer
     filterset_fields = ['name', 'supplier']
     search_fields = ['name','details']
-
-# class BillingApiView(ModelViewSet):
-#     queryset = Billing.objects.all()
-#     serializer_class = BillingSerializer
-#     search_fields = ['patient__name']
-
-#     def perform_create(self, serializer):
-#         patient_id = self.request.data.get('patient')
-#         patient = get_object_or_404(Patient, id=patient_id)
-#         serializer.save(patient=patient)
-#     def perform_create(self, serializer):
-#         patient_id = self.request.data.get('purchases')
-#         patient = get_object_or_404(Purchase, id=patient_id)
-#         serializer.save(purchases=patient)
-
 class BillingApiView(ModelViewSet):
-    # queryset = Billing.objects.all()
-    # serializer_class = BillingSerializer
-    # search_fields = ['patient__name']
     queryset = Billing.objects.all()
     serializer_class = BillingSerializer
     search_fields = ['patient__name']
@@ -189,16 +168,3 @@ class ReportViewSet(ModelViewSet):
 
         return Response(report)
 
-#Sandesh Dai
-# def EventCost(request, event_id):
-#     # def get(self, request, event_id):
-#     event = Events.objects.get(pk=event_id)
-#     venuecost = event.venue_cost 
-#     total_attendees = event.attendees.count()
-#     cost_based_on_attendees = event.Food_cost_per_person * total_attendees
-#     total_logistic_cost = (
-#         Catering.objects.filter(event=event).aggregate(total_logistic_cost=models.Sum('cost'))['total_logistic_cost'] +
-#         Equipment.objects.filter(event=event).aggregate(total_logistic_cost=models.Sum('cost'))['total_logistic_cost'] +
-#         Transportation.objects.filter(event=event).aggregate(total_logistic_cost=models.Sum('cost'))['total_logistic_cost'] 
-#     )
-#     total_event_cost = venuecost + cost_based_on_attendees + total_logistic_cost
