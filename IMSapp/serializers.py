@@ -1,6 +1,10 @@
 from rest_framework import serializers
 from .models import *
 from decimal import Decimal
+from django.utils.timezone import now
+from pytz import timezone
+import pytz
+kathmandu_tz = timezone('Asia/Kathmandu')
 
 class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
@@ -59,23 +63,23 @@ class BillingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Billing
         fields = '__all__'
-
+        
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        total = Decimal(0)
         purchases_data = []
-
+        total = Decimal(0)
         # Iterate over related purchases of the instance's patient
         for purchase in instance.patient.purchases.all():
+            purchased_date_local = purchase.purchased_date.astimezone(kathmandu_tz)
             purchase_data = {
                 'product': purchase.product.name,
                 'price': format(purchase.product.price, '.2f'),
-                'quantity': format(purchase.quantity, '.2f'),
+                'quantity': format(purchase.quantity,),
                 'total': format(purchase.total, '.2f'),
+                'purchased_date_time': purchased_date_local.isoformat(),
             }
             purchases_data.append(purchase_data)
             total += Decimal(purchase.total)
-
         representation['total'] = format(total, '.2f')
         representation['purchases'] = purchases_data
         return representation
@@ -109,5 +113,4 @@ class RevenueSerializer(serializers.ModelSerializer):
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reports
-        fields = '__all__'
-        
+        fields = '__all__'     

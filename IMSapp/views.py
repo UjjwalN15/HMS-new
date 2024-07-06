@@ -142,7 +142,8 @@ class ReportViewSet(ModelViewSet):
         patient_kid = Patient.objects.filter(age__lte=18).count()
         patient_adult = Patient.objects.filter(Q(age__lte=40) & Q(age__gt=18)).count()
         patient_old = Patient.objects.filter(age__gt=40).count()
-
+        total_expenses = (expenses if expenses else Decimal('0.0')) + (purchase_product_expenses if  purchase_product_expenses else Decimal('0.0'))
+        total_revenue = (total_revenue_HMS if total_revenue_HMS else 0) + (total_revenue_IMS if total_revenue_IMS else 0 )
         report = {
             'total_system_users': users_count + patients_count + total_staffs + total_doctors,
             'total_patients': patients_count,
@@ -153,17 +154,19 @@ class ReportViewSet(ModelViewSet):
             'revenue_HMS': (total_revenue_HMS if total_revenue_HMS else 0),
             'revenue_count_IMS' : revenue_count_IMS,
             'revenue_IMS': (total_revenue_IMS if total_revenue_IMS else 0),
-            'total revenue': (total_revenue_HMS if total_revenue_HMS else 0) + (total_revenue_IMS if total_revenue_IMS else 0 ),
+            'total revenue': total_revenue ,
             'expenses_count' : expenses_count,
             'expenses': (expenses if expenses else 0),
             'product_purchase_count': purchase_product_count,
             'product_purchase_expenses': (purchase_product_expenses if purchase_product_expenses else 0),
-            'total_expenses': (expenses if expenses else Decimal('0.0')) + (purchase_product_expenses if  purchase_product_expenses else Decimal('0.0')),
+            'total_expenses': total_expenses,
             'total_products': total_products,
             'total_doctors': total_doctors,
             'kid_patient' : patient_kid,
             'adult_patient' : patient_adult,
             'old_patient' : patient_old,
+            'loss': (total_expenses - total_revenue if total_expenses > total_revenue else 0 ),
+            'profit': (total_revenue - total_expenses if total_expenses < total_revenue else 0 )
         }
 
         return Response(report)

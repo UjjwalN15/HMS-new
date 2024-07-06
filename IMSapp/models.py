@@ -4,6 +4,7 @@ from base.models import Patient
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 from decimal import Decimal
+from django.utils.timezone import now
 # Create your models here.    
 class ProductCategory(models.Model):
     name = models.CharField(max_length = 200)
@@ -38,6 +39,7 @@ class Purchase(models.Model):
     quantity = models.IntegerField()
     product = models.ForeignKey(Product, on_delete=models.CASCADE, null=False, blank=False)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, null=False, blank=False)
+    purchased_date = models.DateTimeField(default=now)
     total = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
     def save(self, *args, **kwargs):
