@@ -23,13 +23,12 @@ class Supplier(models.Model):
     
     
 class Product(models.Model):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, unique=True, db_index=True)
     description = models.TextField()
     stock = models.IntegerField()
     category = models.ForeignKey(ProductCategory,on_delete = models.CASCADE, null = False)
     price = models.DecimalField(max_digits=10, decimal_places=2,null=False, blank=False)
     department = models.ForeignKey(Department,on_delete=models.CASCADE, null=True, blank=True)
-    supplier = models.ForeignKey(Supplier,on_delete=models.CASCADE, null=False, blank=False)
     def __str__(self):
         return self.name
     

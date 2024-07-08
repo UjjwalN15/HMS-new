@@ -145,29 +145,39 @@ class ReportViewSet(ModelViewSet):
         total_expenses = (expenses if expenses else Decimal('0.0')) + (purchase_product_expenses if  purchase_product_expenses else Decimal('0.0'))
         total_revenue = (total_revenue_HMS if total_revenue_HMS else 0) + (total_revenue_IMS if total_revenue_IMS else 0 )
         report = {
-            'total_system_users': users_count + patients_count + total_staffs + total_doctors,
-            'total_patients': patients_count,
-            'total_staffs': total_staffs + total_doctors,
-            'total_users' : users_count,
+            'system_users':{
+                'total_system_users': users_count + patients_count + total_staffs + total_doctors,
+                'total_patients': patients_count,
+                'total_staffs': total_staffs + total_doctors,
+                'total_users' : users_count,
+                'total_doctors': total_doctors,
+                'kid_patient' : patient_kid,
+                'adult_patient' : patient_adult,
+                'old_patient' : patient_old,
+            },
             'total_appointments': appointments_count,
-            'revenue_count_HMS' : revenue_count_HMS,
-            'revenue_HMS': (total_revenue_HMS if total_revenue_HMS else 0),
-            'revenue_count_IMS' : revenue_count_IMS,
-            'revenue_IMS': (total_revenue_IMS if total_revenue_IMS else 0),
-            'total revenue': total_revenue ,
-            'expenses_count' : expenses_count,
-            'expenses': (expenses if expenses else 0),
-            'product_purchase_count': purchase_product_count,
-            'product_purchase_expenses': (purchase_product_expenses if purchase_product_expenses else 0),
-            'total_expenses': total_expenses,
+            'Revenues':{
+                'revenue_count_HMS' : revenue_count_HMS,
+                'revenue_HMS': (total_revenue_HMS if total_revenue_HMS else 0),
+                'revenue_count_IMS' : revenue_count_IMS,
+                'revenue_IMS': (total_revenue_IMS if total_revenue_IMS else 0),
+                'total revenue': total_revenue ,
+            },
+            'Expenses':{
+                'expenses_count' : expenses_count,
+                'expenses': (expenses if expenses else 0),
+                'product_purchase_count': purchase_product_count,
+                'product_purchase_expenses': (purchase_product_expenses if purchase_product_expenses else 0),
+                'total_expenses': total_expenses,
+            },
             'total_products': total_products,
-            'total_doctors': total_doctors,
-            'kid_patient' : patient_kid,
-            'adult_patient' : patient_adult,
-            'old_patient' : patient_old,
-            'loss': (total_expenses - total_revenue if total_expenses > total_revenue else 0 ),
-            'profit': (total_revenue - total_expenses if total_expenses < total_revenue else 0 )
+            '_':'___________________________________',
         }
+        if total_expenses > total_revenue:
+            report['loss'] = total_expenses - total_revenue
+        else:
+            report['profit'] = total_revenue - total_expenses
+        
 
         return Response(report)
 

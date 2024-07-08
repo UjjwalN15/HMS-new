@@ -20,7 +20,6 @@ class ProductSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['department'] = instance.department.name if instance.department else None
         representation['category'] = instance.category.name if instance.category else None
-        representation['supplier'] = instance.supplier.name if instance.supplier else None
         
         return representation
 class ProductCategorySerializer(serializers.ModelSerializer):

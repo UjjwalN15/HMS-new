@@ -6,18 +6,23 @@ from django.core.mail import send_mail
 
 @receiver(post_save, sender=Purchase_Products)
 def update_product(sender, instance, created, **kwargs):
+    product_name_capitalized = instance.name.capitalize()  # Convert the product name to capitalized
+    product_description_capitalized = instance.details.capitalize()  # Convert the product name to capitalized
+
     try:
-        product = Product.objects.get(name=instance.name)
+        # Perform the lookup using the lowercase product name
+        product = Product.objects.get(name__iexact=product_name_capitalized)
         product.description = instance.details
-        product.stock += instance.quantity #For adding quantity if product is purchased
+        product.stock += instance.quantity  # For adding quantity if product is purchased
         product.price = instance.price
         product.category = instance.category
-        product.supplier = instance.supplier 
-        product.department = instance.department  
+        product.supplier = instance.supplier
+        product.department = instance.department
     except Product.DoesNotExist:
+        # Create a new product using the lowercase product name
         product = Product.objects.create(
-            name=instance.name,
-            description=instance.details,
+            name=product_name_capitalized,
+            description=product_description_capitalized,
             stock=instance.quantity,
             price=instance.price,
             category=instance.category,
