@@ -4,14 +4,16 @@ from django.contrib.auth.models import Group
 from django.utils.timezone import now
 from rest_framework.generics import GenericAPIView
 from django.core.validators import RegexValidator
+from django.core.validators import MinLengthValidator
+from base.validators import CustomPasswordValidator
 
 
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=300, null=True, blank=True)
-    password = models.CharField(max_length=128)  # Adjusting max length to a common value
-    groups = models.ManyToManyField(Group, blank=True)  # Default will be handled differently
+    password = models.CharField(max_length=300, validators=[MinLengthValidator(8), CustomPasswordValidator()])  # Adjusting max length to a common value
+    groups = models.ManyToManyField(Group, blank=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     def __str__(self):
