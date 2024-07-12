@@ -52,11 +52,36 @@ class PurchaseSerializer(serializers.ModelSerializer):
         representation['supplier'] = instance.supplier.name 
         representation['product'] = instance.product.name 
         return representation
+ 
+# class BillingSerializer(serializers.ModelSerializer):
+#     purchases = PurchaseSerializer(many=True, read_only=True)
 
-
+#     class Meta:
+#         model = Billing
+#         fields = '__all__'
+        
+#     def to_representation(self, instance):
+#         representation = super().to_representation(instance)
+#         purchases_data = []
+#         total = Decimal(0)
+        
+#         if instance.patient:
+#             for purchase in instance.patient.purchases.all():
+#                 purchased_date_local = purchase.purchased_date.astimezone(kathmandu_tz)
+#                 purchase_data = {
+#                     'product': purchase.product.name if purchase.product else None,
+#                     'price': format(purchase.product.price, '.2f') if purchase.product and purchase.product.price is not None else None,
+#                     'quantity': format(purchase.quantity) if purchase.quantity is not None else None,
+#                     'total': format(purchase.total, '.2f') if purchase.total is not None else None,
+#                     'purchased_date_time': purchased_date_local.isoformat(),
+#                 }
+#                 purchases_data.append(purchase_data)
+#                 total += Decimal(purchase.total) if purchase.total is not None else Decimal(0)
+#         representation['patient'] = instance.patient.name if instance.patient else None
+#         representation['total'] = format(total, '.2f')
+#         representation['purchases'] = purchases_data
+#         return representation
 class BillingSerializer(serializers.ModelSerializer):
-    total = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
-    patient_name = serializers.CharField(source='patient.name', read_only=True)
     purchases = PurchaseSerializer(many=True, read_only=True)
 
     class Meta:
@@ -67,22 +92,38 @@ class BillingSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         purchases_data = []
         total = Decimal(0)
-        # Iterate over related purchases of the instance's patient
-        for purchase in instance.patient.purchases.all():
-            purchased_date_local = purchase.purchased_date.astimezone(kathmandu_tz)
-            purchase_data = {
-                'product': purchase.product.name,
-                'price': format(purchase.product.price, '.2f'),
-                'quantity': format(purchase.quantity,),
-                'total': format(purchase.total, '.2f'),
-                'purchased_date_time': purchased_date_local.isoformat(),
-            }
-            purchases_data.append(purchase_data)
-            total += Decimal(purchase.total)
+        
+        if instance.patient:
+            for purchase in instance.patient.purchases.all():
+                purchased_date_local = purchase.purchased_date.astimezone(kathmandu_tz)
+                purchase_data = {
+                    'product': purchase.product.name if purchase.product else None,
+                    'price': format(purchase.product.price, '.2f') if purchase.product and purchase.product.price is not None else None,
+                    'quantity': format(purchase.quantity) if purchase.quantity is not None else None,
+                    'total': format(purchase.total, '.2f') if purchase.total is not None else None,
+                    'purchased_date_time': purchased_date_local.isoformat(),
+                }
+                purchases_data.append(purchase_data)
+                total += Decimal(purchase.total) if purchase.total is not None else Decimal(0)
+        representation['patient'] = instance.patient.name if instance.patient else None
         representation['total'] = format(total, '.2f')
         representation['purchases'] = purchases_data
         return representation
-    
+
+    def create(self, validated_data):
+        patient = validated_data.get('patient')
+        billing = Billing.objects.create(patient=patient, status=validated_data.get('status'))
+
+        # Associate purchases with the billing based on the patient
+        purchases = Purchase.objects.filter(patient=patient)
+        billing.purchases.set(purchases)
+
+        # Calculate the total
+        total = purchases.aggregate(total=Sum('total'))['total'] or Decimal('0.00')
+        billing.total = total
+        billing.save()
+        return billing
+
 class PurchaseProductsSerializer(serializers.ModelSerializer):
     total = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     class Meta:

@@ -47,6 +47,8 @@ class PurchaseProductViewSet(ModelViewSet):
     serializer_class = PurchaseProductsSerializer
     filterset_fields = ['name', 'supplier']
     search_fields = ['name','details']
+    
+    
 class BillingApiView(ModelViewSet):
     queryset = Billing.objects.all()
     serializer_class = BillingSerializer

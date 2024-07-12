@@ -1,44 +1,44 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
+from decimal import Decimal
+from django.db.models import Sum, F
 from .models import Purchase_Products, Product, Purchase
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 
 @receiver(post_save, sender=Purchase_Products)
-def update_product(sender, instance, created, **kwargs):
-    product_name_capitalized = instance.name.capitalize()  # Convert the product name to capitalized
-    product_description_capitalized = instance.details.capitalize()  # Convert the product name to capitalized
+def update_or_create_product(sender, instance, created, **kwargs):
+    product_name = instance.name.capitalize()  # Capitalize the product name
+    product_description = instance.details.capitalize()  # Capitalize the product description
 
     try:
-        # Perform the lookup using the lowercase product name
-        product = Product.objects.get(name__iexact=product_name_capitalized)
-        product.description = instance.details
-        product.stock += instance.quantity  # For adding quantity if product is purchased
+        # Try to find an existing product with a case-insensitive match on the name
+        product = Product.objects.get(name__iexact=product_name)
+        product.description = product_description
+        product.stock += instance.quantity  # Increase stock if the product is purchased again
         product.price = instance.price
         product.category = instance.category
-        product.supplier = instance.supplier
         product.department = instance.department
     except Product.DoesNotExist:
-        # Create a new product using the lowercase product name
+        # Create a new product if it doesn't exist
         product = Product.objects.create(
-            name=product_name_capitalized,
-            description=product_description_capitalized,
+            name=product_name,
+            description=product_description,
             stock=instance.quantity,
             price=instance.price,
             category=instance.category,
-            supplier=instance.supplier,
             department=instance.department,
         )
 
-    product.save()  # Ensure correct handling of ManyToManyField
-    
-#for subtracting from the quantity if purchased
+    product.save()  # Save the product instance
+
 @receiver(post_save, sender=Purchase)
-def update_product(sender, instance, created, **kwargs):
-    if created:  # Only update if the purchase was newly created
+def adjust_product_stock(sender, instance, created, **kwargs):
+    if created:  # Only adjust stock if the purchase was newly created
         product = instance.product
-        product.stock -= instance.quantity
+        product.stock -= instance.quantity  # Decrease stock based on the purchase quantity
         product.save()
+        
 
 #For sending mail dynamically
 @receiver(post_save, sender=Product)
