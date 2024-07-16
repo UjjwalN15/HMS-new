@@ -103,9 +103,9 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
-    {
-        'NAME': 'base.validators.CustomPasswordValidator',
-    },
+    # {
+    #     'NAME': 'base.validators.CustomPasswordValidator',
+    # },
 ]
 
 
