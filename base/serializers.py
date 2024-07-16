@@ -72,7 +72,7 @@ class UserSerializer(ModelSerializer):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = User
-        fields = ['email','password','groups']
+        fields = ['email','username','password','groups']
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         # Iterate over related groups if it's a many-to-many relationship

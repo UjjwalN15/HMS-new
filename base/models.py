@@ -21,6 +21,8 @@ class User(AbstractUser):
         return self.email
 
     def save(self, *args, **kwargs):
+        if not self.username:
+            self.username = self.email
         # Ensure the user is assigned to the default group if not already assigned
         super().save(*args, **kwargs)
         default_group = Group.objects.get(id=6)
