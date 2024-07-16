@@ -2,6 +2,7 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import *
 from django.contrib.auth.models import Group
+from django.contrib.auth.password_validation import validate_password
 
 
 class Doctor_SpecialitySerializer(ModelSerializer):
@@ -68,6 +69,7 @@ class EmergencySerializer(ModelSerializer):
 
         
 class UserSerializer(ModelSerializer):
+    password = serializers.CharField(write_only=True)
     class Meta:
         model = User
         fields = ['email','password','groups']
@@ -81,3 +83,7 @@ class UserSerializer(ModelSerializer):
             })
         representation['groups'] = group_data
         return representation
+    
+    def validate_password(self, value):
+        validate_password(value)
+        return value

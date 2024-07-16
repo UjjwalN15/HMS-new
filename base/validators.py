@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext as _
+from django.utils import timezone
 
 class CustomPasswordValidator:
     def validate(self, password, user=None):
@@ -31,3 +32,6 @@ class CustomPasswordValidator:
         return _(
             "Your password must contain at least one lowercase letter, one uppercase letter, one digit, and one special symbol."
         )
+def validate_appointment_date(value):
+    if value <= timezone.now().date():
+        raise ValidationError("Appointment date should be in future.")

@@ -6,13 +6,14 @@ from rest_framework.generics import GenericAPIView
 from django.core.validators import RegexValidator
 from django.core.validators import MinLengthValidator
 from base.validators import CustomPasswordValidator
+from .validators import validate_appointment_date
 
 
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=300, null=True, blank=True)
-    password = models.CharField(max_length=300, validators=[MinLengthValidator(8), CustomPasswordValidator()])  # Adjusting max length to a common value
+    password = models.CharField(max_length=300, validators=[CustomPasswordValidator()])  # Adjusting max length to a common value
     groups = models.ManyToManyField(Group, blank=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
@@ -25,6 +26,9 @@ class User(AbstractUser):
         default_group = Group.objects.get(id=6)
         if not self.groups.exists():
             self.groups.add(default_group)
+    def set_password(self, raw_password):
+        super().set_password(raw_password)
+        self.full_clean()  # Ensure validators are called
     
 class Doctor_Speciality(models.Model):
     name = models.CharField(max_length=255)
@@ -100,7 +104,7 @@ class Staff(models.Model):
 class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, null=True, blank=True)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE)
-    appointment_date = models.DateField()
+    appointment_date = models.DateField(validators=[validate_appointment_date])
     status = models.CharField(max_length=100, choices=[('scheduled', 'Scheduled'), ('canceled', 'Canceled'), ('completed', 'Completed')],default='scheduled')
     def __str__(self):
         return self.patient.name

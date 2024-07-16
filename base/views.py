@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from IMSapp.models import *
 from django.db.models import Sum, Count, Avg
+from django.core.exceptions import ValidationError
 # Create your views here.
 
 class PatientApiView(ModelViewSet):
@@ -86,16 +87,26 @@ def Login(request):
         return Response(token.key)
 
 @api_view(['POST'])
-@permission_classes([AllowAny,]) #This permission class should always below the api view
+@permission_classes([AllowAny])
 def register(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         password = request.data.get('password')
-        hash_password = make_password(password)
-        a = serializer.save()
-        a.password = hash_password
-        a.save()
-        return Response('Data Created!', status=status.HTTP_201_CREATED)
+        try:
+            # Validate the password
+            CustomPasswordValidator().validate(password)
+            # If valid, hash the password
+            hash_password = make_password(password)
+            
+            # Save the user instance
+            user = serializer.save()
+            user.password = hash_password
+            user.save()
+            
+            return Response('Data Created!', status=status.HTTP_201_CREATED)
+        except ValidationError as e:
+            # If password validation fails, return the errors
+            return Response({'password': e.messages}, status=status.HTTP_400_BAD_REQUEST)
     else:
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
