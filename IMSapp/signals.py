@@ -44,7 +44,7 @@ def adjust_product_stock(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Product)
 def send_stock_alert(sender, instance, **kwargs):
     if instance.stock <= 50:
-        subject = f'Stock Alert for Product: {instance.name}'
+        subject = f'Stock Alert for Product: {instance.name} Stock: {instance.stock}'
         message = f'The stock for product "{instance.name}" is below 50. Current stock: {instance.stock}.Please contact the supplier to purchase the product.Thank you. HMS TEAM'
         recipients = ['spaceandnature98@gmail.com', 'itsmeujjwal725@gmail.com', 'boysfuny2020@gmail.com']
         

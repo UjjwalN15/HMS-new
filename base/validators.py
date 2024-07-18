@@ -42,3 +42,6 @@ contact_validator = RegexValidator(
 def validate_appointment_date(value):
     if value <= timezone.now().date():
         raise ValidationError("Appointment date should be in future.")
+def validate_schedule_date(value):
+    if value < timezone.now().date():
+        raise ValidationError("Schedule date should be in future or now.")

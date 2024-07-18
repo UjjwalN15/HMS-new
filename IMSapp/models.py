@@ -39,18 +39,18 @@ class Supplier(models.Model):
     
     
 class Product(models.Model):
-    name = models.CharField(max_length=200, unique=True, db_index=True)
+    name = models.CharField(max_length=200, unique=True)
     description = models.TextField()
     stock = models.IntegerField()
-    category = models.ForeignKey(ProductCategory,on_delete = models.CASCADE, null = False)
-    price = models.DecimalField(max_digits=10, decimal_places=2,null=False, blank=False)
-    department = models.ForeignKey(Department,on_delete=models.CASCADE, null=True, blank=True)
+    category = models.ForeignKey(ProductCategory,on_delete = models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    department = models.ForeignKey(Department,on_delete=models.CASCADE)
     def __str__(self):
         return self.name
     
 class Purchase(models.Model):
     patient = models.ForeignKey(Patient, related_name='purchases', on_delete=models.CASCADE)
-    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.IntegerField()
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
@@ -68,9 +68,9 @@ class Purchase_Products(models.Model):
     quantity = models.PositiveIntegerField()
     details = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE, null=True)
-    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE, null=True)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
+    category = models.ForeignKey(ProductCategory, on_delete=models.CASCADE)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
     def save(self, *args, **kwargs):
@@ -79,14 +79,8 @@ class Purchase_Products(models.Model):
     def __str__(self):
         return self.name
     
-# class Billing(models.Model):
-#     patient = models.ForeignKey(Patient, related_name='billing', on_delete=models.CASCADE, null=False, blank=False)
-#     purchases = models.ManyToManyField(Purchase)
-#     status = models.CharField(max_length=100, choices=[('paid', 'Paid'), ('unpaid', 'Unpaid')])
-#     def __str__(self):
-#         return self.patient.name
 class Billing(models.Model):
-    patient = models.ForeignKey(Patient, related_name='billing', on_delete=models.CASCADE, null=False, blank=False)
+    patient = models.ForeignKey(Patient, related_name='billing', on_delete=models.CASCADE)
     purchases = models.ManyToManyField(Purchase)
     status = models.CharField(max_length=100, choices=[('paid', 'Paid'), ('unpaid', 'Unpaid')])
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
@@ -97,7 +91,7 @@ class Billing(models.Model):
         
 class Revenue(models.Model):
     title = models.CharField(max_length=300)
-    patient = models.ForeignKey(Patient,on_delete=models.CASCADE, null=True)
+    patient = models.ForeignKey(Patient,on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     date = models.DateField(auto_now_add=True)
     description = models.TextField()

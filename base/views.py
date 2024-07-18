@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from .serializers import *
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import  AllowAny
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import authenticate
@@ -11,9 +11,11 @@ from django.contrib.auth.hashers import make_password
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from IMSapp.models import *
-from django.db.models import Sum, Count, Avg
 from django.core.exceptions import ValidationError
+from .validators import CustomPasswordValidator
+from rest_framework.exceptions import PermissionDenied
 # Create your views here.
+
 
 class PatientApiView(ModelViewSet):
     queryset = Patient.objects.all()
@@ -35,6 +37,12 @@ class DoctorApiView(ModelViewSet):
     serializer_class = DoctorSerializer
     filterset_fields = ['name','phone','email']
     search_fields = ['name','specialty','address']
+    
+class Staff_PositionApiView(ModelViewSet):
+    queryset = Staff_Position.objects.all()
+    serializer_class = Staff_PositionSerializer
+    filterset_fields = ['name']
+    search_fields = ['name']
 
 
 class StaffApiView(ModelViewSet):
@@ -42,6 +50,16 @@ class StaffApiView(ModelViewSet):
     serializer_class = StaffSerializer
     filterset_fields = ['name','phone','email']
     search_fields = ['name','role','address']
+    def get_queryset(self):
+        # Restrict queryset to the current staff member
+        return Staff.objects.filter(id=self.request.user.id)
+
+    def perform_update(self, serializer):
+        # Ensure only the current staff member can update their own information
+        if self.request.user.is_staff:
+            serializer.save()
+        else:
+            raise PermissionDenied("You are not allowed to update other staff members' information.")
 
 class AppointmentApiView(ModelViewSet):
     queryset = Appointment.objects.all()
@@ -56,7 +74,7 @@ class MedicalRecordApiView(ModelViewSet):
     filterset_fields = ['date']
     search_fields = ['diagnosis','treatments','doctor__name','patient__name']
     
-    
+
 class EmergencyApiView(ModelViewSet):
     queryset = Emergency.objects.all()
     serializer_class = EmergencySerializer
@@ -92,6 +110,9 @@ def register(request):
     serializer = UserSerializer(data=request.data)
     if serializer.is_valid():
         password = request.data.get('password')
+        phone = request.data.get('phone')
+        if User.objects.filter(phone=phone).exists():
+            return Response({'phone': ['Phone number already exists.']}, status=status.HTTP_400_BAD_REQUEST)
         try:
             # Validate the password
             CustomPasswordValidator().validate(password)
@@ -103,7 +124,7 @@ def register(request):
             user.password = hash_password
             user.save()
             
-            return Response('Data Created!', status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         except ValidationError as e:
             # If password validation fails, return the errors
             return Response({'password': e.messages}, status=status.HTTP_400_BAD_REQUEST)

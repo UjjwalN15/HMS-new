@@ -8,6 +8,7 @@ from .models import *
 from base.models import *
 from .serializers import *
 from decimal import Decimal
+
 class DepartmentApiView(ModelViewSet):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
@@ -141,6 +142,8 @@ class ReportViewSet(ModelViewSet):
         expenses = Expenses.objects.aggregate(Sum('amount'))['amount__sum']
         purchase_product_expenses = Purchase_Products.objects.aggregate(total_expense=Sum(F('price') * F('quantity')))['total_expense']
         total_doctors = Doctor.objects.count()
+        male_patient = Patient.objects.filter(gender='male').count()
+        female_patient = Patient.objects.filter(gender='female').count()
         patient_kid = Patient.objects.filter(age__lte=18).count()
         patient_adult = Patient.objects.filter(Q(age__lte=40) & Q(age__gt=18)).count()
         patient_old = Patient.objects.filter(age__gt=40).count()
@@ -150,12 +153,14 @@ class ReportViewSet(ModelViewSet):
             'system_users':{
                 'total_system_users': users_count + patients_count + total_staffs + total_doctors,
                 'total_patients': patients_count,
-                'total_staffs': total_staffs + total_doctors,
-                'total_users' : users_count,
+                'total_staffs': total_staffs,
                 'total_doctors': total_doctors,
+                'total_users' : users_count,
                 'kid_patient' : patient_kid,
                 'adult_patient' : patient_adult,
                 'old_patient' : patient_old,
+                'male_patient' : male_patient,
+                'female_patient' : female_patient,
             },
             'total_appointments': appointments_count,
             'Revenues':{
