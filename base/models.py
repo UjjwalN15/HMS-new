@@ -4,6 +4,7 @@ from django.contrib.auth.models import Group
 from django.utils.timezone import now
 from .validators import validate_appointment_date, contact_validator, validate_schedule_date, CustomPasswordValidator
 from django.contrib.auth.hashers import make_password
+from django.core.validators import validate_email
 
 class User(AbstractUser):
     first_name = models.CharField(max_length=300)
@@ -36,18 +37,36 @@ class Doctor_Speciality(models.Model):
     def __str__(self):
         return self.name
     
+# class Doctor(models.Model):
+#     name = models.CharField(max_length=300)
+#     email = models.EmailField(unique=True)
+#     age = models.PositiveIntegerField()
+#     gender = models.CharField(max_length=100,choices=[('male','Male'),('female','Female'),('others','Others')])
+#     address = models.CharField(max_length=300)
+#     specialty = models.ForeignKey(Doctor_Speciality, on_delete=models.CASCADE)
+#     phone = models.CharField(max_length=10,unique=True,validators=[contact_validator],help_text="Enter a 10-digit contact number")
+#     def __str__(self):
+#         return self.name
+#     def save(self, *args, **kwargs):
+#         # Hash the password before saving the model
+#         self.password = make_password(self.password)
+#         super().save(*args, **kwargs)
 class Doctor(models.Model):
     name = models.CharField(max_length=300)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=300, validators=[CustomPasswordValidator()])
+    email = models.EmailField(unique=True, validators=[validate_email])
+    password = models.CharField(max_length=300)
     age = models.PositiveIntegerField()
-    gender = models.CharField(max_length=100,choices=[('male','Male'),('female','Female'),('others','Others')])
+    gender = models.CharField(max_length=100, choices=[('male', 'Male'), ('female', 'Female'), ('others', 'Others')])
     address = models.CharField(max_length=300)
     specialty = models.ForeignKey(Doctor_Speciality, on_delete=models.CASCADE)
-    phone = models.CharField(max_length=10,unique=True,validators=[contact_validator],help_text="Enter a 10-digit contact number")
+    phone = models.CharField(max_length=10, unique=True, validators=[contact_validator], help_text="Enter a 10-digit contact number")
+
     def __str__(self):
         return self.name
+
     def save(self, *args, **kwargs):
+        # Apply custom password validation
+        CustomPasswordValidator().validate(self.password)
         # Hash the password before saving the model
         self.password = make_password(self.password)
         super().save(*args, **kwargs)
@@ -55,7 +74,6 @@ class Doctor(models.Model):
 class Patient(models.Model):
     name = models.CharField(max_length=300)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=300, validators=[CustomPasswordValidator])
     age = models.PositiveIntegerField()
     gender = models.CharField(max_length=100,choices=[('male','Male'),('female','Female'),('others','Others')])
     address = models.CharField(max_length=300)
@@ -73,7 +91,6 @@ class Staff_Position(models.Model):
 class Staff(models.Model): 
     name = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
-    password = models.CharField(max_length=300, validators=[CustomPasswordValidator])
     age = models.PositiveIntegerField()
     gender = models.CharField(max_length=100,choices=[('male','Male'),('female','Female'),('others','Others')])
     address = models.CharField(max_length=300)

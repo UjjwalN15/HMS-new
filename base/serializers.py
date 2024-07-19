@@ -8,15 +8,38 @@ class Doctor_SpecialitySerializer(ModelSerializer):
     class Meta:
         model = Doctor_Speciality
         fields = '__all__'
-class DoctorSerializer(ModelSerializer):
-    password = serializers.CharField(write_only=True)
+# class DoctorSerializer(ModelSerializer):
+#     password = serializers.CharField()
+#     class Meta:
+#         model = Doctor
+#         fields = '__all__'
+#     def to_representation(self, instance):
+#         representation = super().to_representation(instance)
+#         representation['specialty'] = instance.specialty.name if instance.specialty else None
+#         return representation
+#     def validate_password(self, value):
+#         validate_password(value)
+#         return value
+class DoctorSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only = True)
     class Meta:
         model = Doctor
         fields = '__all__'
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['specialty'] = instance.specialty.name if instance.specialty else None
         return representation
+
+    def validate_password(self, value):
+        # Apply custom password validation
+        CustomPasswordValidator().validate(value)
+        return value
+
+    def create(self, validated_data):
+        # Hash the password before saving the model
+        validated_data['password'] = make_password(validated_data['password'])
+        return super().create(validated_data)
 class PatientSerializer(ModelSerializer):
     class Meta:
         model = Patient

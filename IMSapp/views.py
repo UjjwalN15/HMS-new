@@ -127,7 +127,7 @@ class ReportViewSet(ModelViewSet):
     search_fields = ['title']
 
     def list(self, request):
-        users_count = User.objects.count()
+        users_count = User.objects.filter(groups__name="User").count()
         patients_count = Patient.objects.count()
         appointments_count = Appointment.objects.count()
         revenue_count_HMS = Revenue.objects.count()
@@ -135,13 +135,13 @@ class ReportViewSet(ModelViewSet):
         revenue_count_IMS = Purchase.objects.count()
         total_revenue_IMS = Purchase.objects.aggregate(total_expense=Sum(F('product__price') * F('quantity')))['total_expense']
         total_products = Product.objects.count()
-        total_staffs = Staff.objects.count() 
-        total_doctors = Doctor.objects.count()
+        group_ids = [1, 3, 4, 5]
+        total_staffs = User.objects.filter(groups__in=group_ids).distinct().count()
+        total_doctors = User.objects.filter(groups__name="Doctor").count()
         expenses_count = Expenses.objects.count()
         purchase_product_count = Purchase_Products.objects.count()
         expenses = Expenses.objects.aggregate(Sum('amount'))['amount__sum']
         purchase_product_expenses = Purchase_Products.objects.aggregate(total_expense=Sum(F('price') * F('quantity')))['total_expense']
-        total_doctors = Doctor.objects.count()
         male_patient = Patient.objects.filter(gender='male').count()
         female_patient = Patient.objects.filter(gender='female').count()
         patient_kid = Patient.objects.filter(age__lte=18).count()
@@ -151,16 +151,20 @@ class ReportViewSet(ModelViewSet):
         total_revenue = (total_revenue_HMS if total_revenue_HMS else 0) + (total_revenue_IMS if total_revenue_IMS else 0 )
         report = {
             'system_users':{
-                'total_system_users': users_count + patients_count + total_staffs + total_doctors,
-                'total_patients': patients_count,
-                'total_staffs': total_staffs,
-                'total_doctors': total_doctors,
-                'total_users' : users_count,
-                'kid_patient' : patient_kid,
-                'adult_patient' : patient_adult,
-                'old_patient' : patient_old,
-                'male_patient' : male_patient,
-                'female_patient' : female_patient,
+                'total_system_users': users_count + patients_count + total_doctors + total_staffs,
+                'users_demography' : {
+                    'total_staffs': total_staffs,
+                    'total_doctors': total_doctors,
+                    'total_users' : users_count,
+                },
+                'total_patients': patients_count, 
+                'patients_demography' : {
+                    'kid_patient' : patient_kid,
+                    'adult_patient' : patient_adult,
+                    'old_patient' : patient_old,
+                    'male_patient' : male_patient,
+                    'female_patient' : female_patient,
+                    },
             },
             'total_appointments': appointments_count,
             'Revenues':{
