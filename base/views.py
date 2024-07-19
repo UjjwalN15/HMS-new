@@ -104,72 +104,33 @@ def Login(request):
         token, _ = Token.objects.get_or_create(user=user)
         return Response(token.key)
 
-# @api_view(['POST'])
-# @permission_classes([AllowAny])
-# def register(request):
-#     serializer = UserSerializer(data=request.data)
-#     if serializer.is_valid():
-#         password = request.data.get('password')
-#         phone = request.data.get('phone')
-#         if User.objects.filter(phone=phone).exists():
-#             return Response({'phone': ['Phone number already exists.']}, status=status.HTTP_400_BAD_REQUEST)
-#         try:
-#             # Validate the password
-#             CustomPasswordValidator().validate(password)
-#             # If valid, hash the password
-#             hash_password = make_password(password)
-            
-#             # Save the user instance
-#             user = serializer.save()
-#             user.password = hash_password
-#             user.save()
-            
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         except ValidationError as e:
-#             # If password validation fails, return the errors
-#             return Response({'password': e.messages}, status=status.HTTP_400_BAD_REQUEST)
-#     else:
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
-    data = request.data
-    group_ids = data.get('groups', [])
-    try:
-        username = data.get('username')
-        email = data.get('email')
-        password = data.get('password')
-
-        for group_id in group_ids:
-            try:
-                group = Group.objects.get(id=group_id)
-                if group.id == 2:
-                    doctor = Doctor(
-                        name=username,
-                        email=email,
-                        password=password,
-                        age=data.get('age'),
-                        gender=data.get('gender'),
-                        address=data.get('address'),
-                        specialty=data.get('specialty'),
-                        phone=data.get('phone')
-                    )
-                    doctor.save()
-                elif group.id in [1, 3, 4, 5]:
-                    staff = Staff(
-                        name=username,
-                        email=email,
-                        password=password,
-                        phone=data.get('phone')
-                    )
-                    staff.save()
-            except Group.DoesNotExist:
-                return Response({"error": f"Group with id {group_id} does not exist."}, status=status.HTTP_400_BAD_REQUEST)
-
-        return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
-    except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    serializer = UserSerializer(data=request.data)
+    if serializer.is_valid():
+        password = request.data.get('password')
+        phone = request.data.get('phone')
+        if User.objects.filter(phone=phone).exists():
+            return Response({'phone': ['Phone number already exists.']}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            # Validate the password
+            CustomPasswordValidator().validate(password)
+            # If valid, hash the password
+            hash_password = make_password(password)
+            
+            # Save the user instance
+            user = serializer.save()
+            user.password = hash_password
+            user.save()
+            
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except ValidationError as e:
+            # If password validation fails, return the errors
+            return Response({'password': e.messages}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 @api_view(['GET'])
 @permission_classes([AllowAny,]) #This permission class should always below the api view
 def groups(request):

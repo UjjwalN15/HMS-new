@@ -8,38 +8,19 @@ class Doctor_SpecialitySerializer(ModelSerializer):
     class Meta:
         model = Doctor_Speciality
         fields = '__all__'
-# class DoctorSerializer(ModelSerializer):
-#     password = serializers.CharField()
-#     class Meta:
-#         model = Doctor
-#         fields = '__all__'
-#     def to_representation(self, instance):
-#         representation = super().to_representation(instance)
-#         representation['specialty'] = instance.specialty.name if instance.specialty else None
-#         return representation
-#     def validate_password(self, value):
-#         validate_password(value)
-#         return value
-class DoctorSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only = True)
+class DoctorSerializer(ModelSerializer):
+    password = serializers.CharField()
     class Meta:
         model = Doctor
         fields = '__all__'
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation['specialty'] = instance.specialty.name if instance.specialty else None
         return representation
-
     def validate_password(self, value):
-        # Apply custom password validation
-        CustomPasswordValidator().validate(value)
+        validate_password(value)
         return value
 
-    def create(self, validated_data):
-        # Hash the password before saving the model
-        validated_data['password'] = make_password(validated_data['password'])
-        return super().create(validated_data)
 class PatientSerializer(ModelSerializer):
     class Meta:
         model = Patient
@@ -101,14 +82,15 @@ class EmergencySerializer(ModelSerializer):
     class Meta:
         model = Emergency
         fields = '__all__'
-        
-
-        
-class UserSerializer(ModelSerializer):
+                
+class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    name = serializers.ReadOnlyField()  # Use ReadOnlyField to include it in the output but not in input
+
     class Meta:
         model = User
-        fields = ['id','first_name','last_name','name','email','password','gender','phone','age','address','groups']
+        fields = ['id', 'first_name', 'last_name', 'email', 'password', 'gender', 'phone', 'age', 'address', 'groups', 'name']
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         group_data = []
@@ -118,7 +100,7 @@ class UserSerializer(ModelSerializer):
             })
         representation['groups'] = group_data
         return representation
-    
+
     def validate_password(self, value):
         validate_password(value)
         return value

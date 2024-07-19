@@ -3,7 +3,6 @@ from .models import *
 from decimal import Decimal
 from django.utils.timezone import now
 from pytz import timezone
-import pytz
 kathmandu_tz = timezone('Asia/Kathmandu')
 
 class DepartmentSerializer(serializers.ModelSerializer):
